@@ -1,0 +1,280 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private profile and active band workspace preference for a signed-in musician.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "activeBandId": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]*$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "activeBandId", "createdAt", "updatedAt"]
+    },
+    "Band": {
+      "title": "Band",
+      "description": "Shared band workspace holding member UIDs, editable musician roster, and ordered song IDs.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "inviteCode": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "memberUids": {
+          "type": "array",
+          "description": "Bounded list (max 25) of authenticated Firebase UIDs belonging to this band."
+        },
+        "roster": {
+          "type": "array",
+          "description": "Bounded list (max 30) of musician display names available for instrument assignments."
+        },
+        "songIds": {
+          "type": "array",
+          "description": "Bounded list (max 100) of song document IDs in setlist display order."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["name", "ownerId", "inviteCode", "memberUids", "roster", "songIds", "createdAt", "updatedAt"]
+    },
+    "BandMember": {
+      "title": "BandMember",
+      "description": "Membership record acting as the Master Gate subcollection for band workspace authorization.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "role": {
+          "type": "string",
+          "enum": ["owner", "member"]
+        },
+        "inviteCodeUsed": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "role", "inviteCodeUsed", "joinedAt"]
+    },
+    "BandInvite": {
+      "title": "BandInvite",
+      "description": "Direct-lookup invite token mapping a shareable code to a band workspace.",
+      "type": "object",
+      "properties": {
+        "inviteCode": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "bandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "bandName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["inviteCode", "bandId", "bandName", "ownerId", "createdAt"]
+    },
+    "Song": {
+      "title": "Song",
+      "description": "Setlist song entry with role assignments, links, key/BPM, chord progression, and ChordPro lyrics.",
+      "type": "object",
+      "properties": {
+        "bandId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "orderIndex": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "artist": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "recommendedBy": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "referenceUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "chordsUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "lyricsUrl": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "keyChord": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 16
+        },
+        "bpm": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "rehearsing", "considering", "shelved"]
+        },
+        "grooveStyle": {
+          "type": "string",
+          "enum": ["rock", "ballad", "pop", "indie", "anthem"]
+        },
+        "chordProgression": {
+          "type": "array",
+          "description": "Bounded list (max 32) of chord symbols driving the synthesized 5-stem practice track."
+        },
+        "lyricsWithChords": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 20000
+        },
+        "assignments": {
+          "type": "object",
+          "description": "Fixed 10-slot instrument assignment map (vocals1-3, keyboard1, guitar1-3, bass, percussion1-2)."
+        },
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "bandId",
+        "orderIndex",
+        "title",
+        "artist",
+        "recommendedBy",
+        "referenceUrl",
+        "chordsUrl",
+        "keyChord",
+        "bpm",
+        "status",
+        "grooveStyle",
+        "chordProgression",
+        "lyricsWithChords",
+        "assignments",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private musician profile and active band selection."
+    },
+    "/bands/{bandId}": {
+      "schema": { "$ref": "#/entities/Band" },
+      "description": "Shared band workspace containing roster, member UIDs, and ordered song IDs."
+    },
+    "/bands/{bandId}/members/{memberUid}": {
+      "schema": { "$ref": "#/entities/BandMember" },
+      "description": "Master Gate membership records authorizing access to band songs."
+    },
+    "/bandInvites/{inviteCode}": {
+      "schema": { "$ref": "#/entities/BandInvite" },
+      "description": "Invite code lookup table (single-document get only; list disabled)."
+    },
+    "/bands/{bandId}/songs/{songId}": {
+      "schema": { "$ref": "#/entities/Song" },
+      "description": "Collaborative setlist song documents scoped to a band workspace."
+    }
+  }
+}

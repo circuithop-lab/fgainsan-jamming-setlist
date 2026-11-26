@@ -1,0 +1,8 @@
+{
+  "name": "StageDeck",
+  "description": "Real-time collaborative band setlist matrix, interactive chord and lyric sheet with key transposition, and 5-channel multi-track practice mixer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

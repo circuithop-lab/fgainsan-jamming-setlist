@@ -1,0 +1,358 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 4.1: Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidOptionalId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]*$');
+    }
+
+    function isValidInviteCode(code) {
+      return code is string && code.size() >= 6 && code.size() <= 16 && code.matches('^[A-Z0-9\\-]+$');
+    }
+
+    function isValidOptionalUrl(url) {
+      return url is string && (
+        url.size() == 0 ||
+        (url.size() <= 500 && url.matches('^https?://.*'))
+      );
+    }
+
+    function isStringList(arr, minLen, maxLen) {
+      return arr is list
+        && arr.size() >= minLen
+        && arr.size() <= maxLen
+        && (arr.size() == 0 || arr[0] is string);
+    }
+
+    function isBandMember(bandId) {
+      return exists(/databases/$(database)/documents/bands/$(bandId)/members/$(request.auth.uid));
+    }
+
+    function isBandMemberAfter(bandId) {
+      return existsAfter(/databases/$(database)/documents/bands/$(bandId)/members/$(request.auth.uid));
+    }
+
+    // --- Validation Blueprints (Pillar 2) ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'activeBandId', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'activeBandId', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && isValidOptionalId(data.activeBandId)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBand(data) {
+      return data.keys().hasAll(['name', 'ownerId', 'inviteCode', 'memberUids', 'roster', 'songIds', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['name', 'ownerId', 'inviteCode', 'memberUids', 'roster', 'songIds', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && isValidId(data.ownerId)
+        && isValidInviteCode(data.inviteCode)
+        && isStringList(data.memberUids, 1, 25)
+        && isStringList(data.roster, 0, 30)
+        && isStringList(data.songIds, 0, 100)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBandMember(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'inviteCodeUsed', 'joinedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'role', 'inviteCodeUsed', 'joinedAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80
+        && data.role in ['owner', 'member']
+        && isValidInviteCode(data.inviteCodeUsed)
+        && data.joinedAt is timestamp;
+    }
+
+    function isValidBandInvite(data) {
+      return data.keys().hasAll(['inviteCode', 'bandId', 'bandName', 'ownerId', 'createdAt'])
+        && data.keys().hasOnly(['inviteCode', 'bandId', 'bandName', 'ownerId', 'createdAt'])
+        && isValidInviteCode(data.inviteCode)
+        && isValidId(data.bandId)
+        && data.bandName is string && data.bandName.size() >= 1 && data.bandName.size() <= 80
+        && isValidId(data.ownerId)
+        && data.createdAt is timestamp;
+    }
+
+    function isValidSlotValue(val) {
+      return val is string && val.size() <= 60;
+    }
+
+    function isValidAssignments(a) {
+      return a is map
+        && a.keys().hasAll([
+          'vocals1', 'vocals2', 'vocals3',
+          'keyboard1',
+          'guitar1', 'guitar2', 'guitar3',
+          'bass',
+          'percussion1', 'percussion2'
+        ])
+        && a.keys().hasOnly([
+          'vocals1', 'vocals2', 'vocals3',
+          'keyboard1',
+          'guitar1', 'guitar2', 'guitar3',
+          'bass',
+          'percussion1', 'percussion2'
+        ])
+        && isValidSlotValue(a.vocals1)
+        && isValidSlotValue(a.vocals2)
+        && isValidSlotValue(a.vocals3)
+        && isValidSlotValue(a.keyboard1)
+        && isValidSlotValue(a.guitar1)
+        && isValidSlotValue(a.guitar2)
+        && isValidSlotValue(a.guitar3)
+        && isValidSlotValue(a.bass)
+        && isValidSlotValue(a.percussion1)
+        && isValidSlotValue(a.percussion2);
+    }
+
+    function isValidSong(data, bandId) {
+      return data.keys().hasAll([
+          'bandId', 'orderIndex', 'title', 'artist', 'recommendedBy',
+          'referenceUrl', 'chordsUrl', 'keyChord', 'bpm', 'status',
+          'grooveStyle', 'chordProgression', 'lyricsWithChords',
+          'assignments', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'bandId', 'orderIndex', 'title', 'artist', 'recommendedBy',
+          'referenceUrl', 'chordsUrl', 'lyricsUrl', 'keyChord', 'bpm', 'status',
+          'grooveStyle', 'chordProgression', 'lyricsWithChords',
+          'assignments', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && data.bandId == bandId
+        && isValidId(data.bandId)
+        && data.orderIndex is number && data.orderIndex >= 0 && data.orderIndex <= 10000
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 120
+        && data.artist is string && data.artist.size() <= 120
+        && data.recommendedBy is string && data.recommendedBy.size() <= 60
+        && isValidOptionalUrl(data.referenceUrl)
+        && isValidOptionalUrl(data.chordsUrl)
+        && (!('lyricsUrl' in data) || isValidOptionalUrl(data.lyricsUrl))
+        && data.keyChord is string && data.keyChord.size() <= 16
+        && data.bpm is number && data.bpm >= 40 && data.bpm <= 240
+        && data.status in ['confirmed', 'rehearsing', 'considering', 'shelved']
+        && data.grooveStyle in ['rock', 'ballad', 'pop', 'indie', 'anthem']
+        && isStringList(data.chordProgression, 1, 32)
+        && data.lyricsWithChords is string && data.lyricsWithChords.size() <= 20000
+        && isValidAssignments(data.assignments)
+        && isValidId(data.createdBy)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection 1: Private User Profiles (Pillar 6 PII Isolation) ---
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'activeBandId', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // --- Collection 2: Direct-Lookup Band Invites (No Enumeration) ---
+    match /bandInvites/{inviteCode} {
+      allow get: if isSignedIn() && isValidInviteCode(inviteCode);
+      allow list: if false;
+      allow create: if isVerifiedUser()
+        && isValidInviteCode(inviteCode)
+        && isValidBandInvite(incoming())
+        && incoming().inviteCode == inviteCode
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && getAfter(/databases/$(database)/documents/bands/$(incoming().bandId)).data.ownerId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/bands/$(incoming().bandId)).data.inviteCode == inviteCode;
+      allow update: if false;
+      allow delete: if isVerifiedUser()
+        && isValidInviteCode(inviteCode)
+        && existing().ownerId == request.auth.uid;
+    }
+
+    // --- Collection 3: Band Workspaces ---
+    match /bands/{bandId} {
+      allow get: if isSignedIn()
+        && isValidId(bandId)
+        && request.auth.uid in existing().memberUids;
+      // Pillar 8: Secure list query strictly evaluating resource.data with zero get()/exists() calls
+      allow list: if isSignedIn()
+        && request.auth.uid in resource.data.memberUids;
+      allow create: if isVerifiedUser()
+        && isValidId(bandId)
+        && isValidBand(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().memberUids.size() == 1
+        && request.auth.uid in incoming().memberUids
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && isBandMemberAfter(bandId)
+        && existsAfter(/databases/$(database)/documents/bandInvites/$(incoming().inviteCode));
+      allow update: if isVerifiedUser()
+        && isValidId(bandId)
+        && isValidBand(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().inviteCode == existing().inviteCode
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action 1 (Owner): Rename band
+          (
+            existing().ownerId == request.auth.uid
+            && isBandMember(bandId)
+            && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt'])
+          ) ||
+          // Action 2 (Band Member): Update musician roster
+          (
+            request.auth.uid in existing().memberUids
+            && isBandMember(bandId)
+            && incoming().diff(existing()).affectedKeys().hasOnly(['roster', 'updatedAt'])
+          ) ||
+          // Action 3 (Band Member): Update ordered songIds when adding/removing/reordering songs
+          (
+            request.auth.uid in existing().memberUids
+            && isBandMember(bandId)
+            && incoming().diff(existing()).affectedKeys().hasOnly(['songIds', 'updatedAt'])
+          ) ||
+          // Action 4 (Invited Bandmate): Join band atomically alongside member doc creation
+          (
+            !(request.auth.uid in existing().memberUids)
+            && incoming().diff(existing()).affectedKeys().hasOnly(['memberUids', 'updatedAt'])
+            && incoming().memberUids.size() == existing().memberUids.size() + 1
+            && incoming().memberUids.hasAll(existing().memberUids)
+            && request.auth.uid in incoming().memberUids
+            && isBandMemberAfter(bandId)
+          )
+        );
+      allow delete: if isVerifiedUser()
+        && isValidId(bandId)
+        && existing().ownerId == request.auth.uid;
+
+      // --- Subcollection 3A: Master Gate Band Members ---
+      match /members/{memberUid} {
+        allow get: if isSignedIn()
+          && isValidId(bandId)
+          && isValidId(memberUid)
+          && (request.auth.uid == memberUid || isBandMember(bandId));
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(bandId)
+          && isValidId(memberUid)
+          && request.auth.uid == memberUid
+          && isValidBandMember(incoming())
+          && incoming().joinedAt == request.time
+          && (
+            // Owner bootstrapping band atomically
+            (
+              incoming().role == 'owner'
+              && getAfter(/databases/$(database)/documents/bands/$(bandId)).data.ownerId == request.auth.uid
+              && incoming().inviteCodeUsed == getAfter(/databases/$(database)/documents/bands/$(bandId)).data.inviteCode
+            ) ||
+            // Invited member joining with verified invite code
+            (
+              incoming().role == 'member'
+              && exists(/databases/$(database)/documents/bands/$(bandId))
+              && incoming().inviteCodeUsed == get(/databases/$(database)/documents/bands/$(bandId)).data.inviteCode
+              && request.auth.uid in getAfter(/databases/$(database)/documents/bands/$(bandId)).data.memberUids
+            )
+          );
+        allow update: if false;
+        allow delete: if isVerifiedUser()
+          && isValidId(bandId)
+          && isValidId(memberUid)
+          && (
+            request.auth.uid == memberUid ||
+            get(/databases/$(database)/documents/bands/$(bandId)).data.ownerId == request.auth.uid
+          );
+      }
+
+      // --- Subcollection 3B: Band Songs (Master Gate Protected, No List Scraping) ---
+      match /songs/{songId} {
+        allow get: if isSignedIn()
+          && isValidId(bandId)
+          && isValidId(songId)
+          && isBandMember(bandId);
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(bandId)
+          && isValidId(songId)
+          && isValidSong(incoming(), bandId)
+          && incoming().createdBy == request.auth.uid
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && isBandMemberAfter(bandId)
+          && songId in getAfter(/databases/$(database)/documents/bands/$(bandId)).data.songIds;
+        allow update: if isVerifiedUser()
+          && isValidId(bandId)
+          && isValidId(songId)
+          && isValidSong(incoming(), bandId)
+          && incoming().bandId == existing().bandId
+          && incoming().createdBy == existing().createdBy
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && isBandMember(bandId)
+          && (
+            // Action 1: Update role assignments on the matrix
+            incoming().diff(existing()).affectedKeys().hasOnly(['assignments', 'updatedAt']) ||
+            // Action 2: Update Dayunon? status
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+            // Action 3: Update chords, lyrics, progression, key, BPM, groove, or links in Practice Studio
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'keyChord', 'bpm', 'grooveStyle', 'chordProgression',
+              'lyricsWithChords', 'referenceUrl', 'chordsUrl', 'lyricsUrl', 'updatedAt'
+            ]) ||
+            // Action 4: Full song edit via Song Drawer
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'orderIndex', 'title', 'artist', 'recommendedBy',
+              'referenceUrl', 'chordsUrl', 'lyricsUrl', 'keyChord', 'bpm', 'status',
+              'grooveStyle', 'chordProgression', 'lyricsWithChords',
+              'assignments', 'updatedAt'
+            ])
+          );
+        allow delete: if isVerifiedUser()
+          && isValidId(bandId)
+          && isValidId(songId)
+          && isBandMember(bandId);
+      }
+    }
+  }
+}
