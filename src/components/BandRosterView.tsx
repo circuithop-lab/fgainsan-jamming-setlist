@@ -140,12 +140,12 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-8">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-5 sm:space-y-8">
       {/* Top Split: Roster Management + Invite Sharing */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         {/* Left: Band Roster & Workload Table */}
-        <div className="lg:col-span-7 bg-[#131822] border border-white/[0.08] rounded-xl flex flex-col">
-          <div className="px-6 py-4 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+        <div className="lg:col-span-7 bg-[#131822] border border-white/[0.08] rounded-xl flex flex-col min-w-0">
+          <div className="px-4 sm:px-6 py-4 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-semibold text-white">Band Roster &amp; Workload</h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -159,7 +159,7 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
 
           <form
             onSubmit={handleAddMember}
-            className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-2.5"
+            className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/[0.06] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
           >
             <input
               type="text"
@@ -167,12 +167,12 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
               onChange={(e) => setNewMember(e.target.value)}
               maxLength={SCHEMA_LIMITS.SLOT_VALUE_MAX}
               placeholder="Add bandmate name (e.g. Marco)..."
-              className="flex-1 bg-[#0F131C] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/60"
+              className="flex-1 min-w-0 bg-[#0F131C] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/60"
             />
             <button
               type="submit"
               disabled={busy || !newMember.trim()}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-amber-500 text-[#0B0E14] rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold bg-amber-500 text-[#0B0E14] rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               <UserPlus className="w-4 h-4" />
               Add Member
@@ -181,14 +181,14 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
 
           <div className="divide-y divide-white/[0.06]">
             {memberStats.length === 0 ? (
-              <div className="px-6 py-10 text-center text-sm text-slate-400">
+              <div className="px-4 sm:px-6 py-10 text-center text-sm text-slate-400">
                 No musicians added yet. Add names above to populate role dropdowns.
               </div>
             ) : (
               memberStats.map((m) => (
                 <div
                   key={m.name}
-                  className="px-6 py-3 flex items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors"
+                  className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-4 hover:bg-white/[0.02] transition-colors"
                 >
                   <div className="min-w-0">
                     <button
@@ -225,9 +225,9 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
         </div>
 
         {/* Right: Workspace Settings & Invite Code Sharing */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-5 space-y-5 sm:space-y-6 min-w-0">
           {/* Invite Bandmates */}
-          <div className="bg-[#131822] border border-white/[0.08] rounded-xl p-6 space-y-4">
+          <div className="bg-[#131822] border border-white/[0.08] rounded-xl p-4 sm:p-6 space-y-4">
             <div className="space-y-1">
               <h2 className="text-base font-semibold text-white">Share This Setlist</h2>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -235,8 +235,8 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-[#0B0E14] border border-white/[0.08]">
-              <span className="font-mono text-xl font-semibold tracking-widest text-amber-400 tabular-nums">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-3.5 sm:px-4 py-3 rounded-lg bg-[#0B0E14] border border-white/[0.08]">
+              <span className="font-mono text-lg sm:text-xl font-semibold tracking-widest text-amber-400 tabular-nums">
                 {band.inviteCode}
               </span>
               <button

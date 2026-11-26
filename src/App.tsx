@@ -368,7 +368,7 @@ export default function App() {
         : 'Band Roster & Sharing';
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-[#F1F5F9] flex">
+    <div className="min-h-[100dvh] bg-[#0B0E14] text-[#F1F5F9] flex">
       <Sidebar
         user={user}
         bands={bands}
@@ -385,15 +385,15 @@ export default function App() {
         onNotify={showToast}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-[100dvh] overflow-x-hidden">
         {/* Contextual Workspace Top Bar */}
-        <header className="h-14 px-5 lg:px-6 border-b border-white/[0.08] bg-[#0B0E14] flex items-center justify-between gap-4 shrink-0 sticky top-0 z-30">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="h-14 px-3 sm:px-5 lg:px-6 border-b border-white/[0.08] bg-[#0B0E14] flex items-center justify-between gap-2 sm:gap-4 shrink-0 sticky top-0 z-30">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
-              className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white rounded-md"
+              className="lg:hidden p-2 -ml-1.5 text-slate-300 hover:text-white rounded-md shrink-0"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -417,7 +417,7 @@ export default function App() {
               setEditingSong(null);
               setDrawerOpen(true);
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-amber-500 text-[#0B0E14] rounded-lg hover:bg-amber-400 transition-colors whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs font-semibold bg-amber-500 text-[#0B0E14] rounded-lg hover:bg-amber-400 transition-colors whitespace-nowrap shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add Song</span>
@@ -501,7 +501,7 @@ export default function App() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-lg bg-[#1A2130] border border-amber-500/35 text-xs font-medium text-white shadow-2xl"
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-5 sm:right-5 z-50 px-4 py-2.5 rounded-lg bg-[#1A2130] border border-amber-500/35 text-xs font-medium text-white shadow-2xl text-center sm:text-left"
         >
           {toast}
         </div>

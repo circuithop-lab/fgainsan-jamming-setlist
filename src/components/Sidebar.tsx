@@ -71,18 +71,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const railContent = (
-    <div className="h-full w-[248px] bg-[#0F131C] border-r border-white/[0.08] flex flex-col select-none">
+    <div className="h-[100dvh] lg:h-full w-[268px] max-w-[85vw] lg:w-[248px] bg-[#0F131C] border-r border-white/[0.08] flex flex-col select-none">
       {/* Brand Logo Crest & Wordmark */}
-      <div className="px-4 pt-4 pb-3.5 border-b border-white/[0.08] shrink-0 relative flex flex-col items-center gap-2.5">
+      <div className="px-4 pt-3.5 pb-3 lg:pt-4 lg:pb-3.5 border-b border-white/[0.08] shrink-0 relative flex flex-col items-center gap-2 lg:gap-2.5">
         <button
           type="button"
           onClick={onCloseMobile}
           aria-label="Close navigation"
-          className="lg:hidden absolute top-2.5 right-2.5 z-10 p-1.5 text-slate-400 hover:text-white rounded-md bg-[#0F131C]/80"
+          className="lg:hidden absolute top-2.5 right-2.5 z-10 p-2 text-slate-400 hover:text-white rounded-md bg-[#0F131C]/80"
         >
           <X className="w-4 h-4" />
         </button>
-        <div className="w-full max-w-[200px] aspect-[11/10] rounded-2xl overflow-hidden border border-white/15 bg-[#060C19] shadow-lg shrink-0">
+        <div className="w-full max-w-[132px] lg:max-w-[200px] aspect-[11/10] rounded-2xl overflow-hidden border border-white/15 bg-[#060C19] shadow-lg shrink-0">
           <img
             src={`${import.meta.env.BASE_URL}assets/aistudio/image_b9eac5aa.png`}
             alt="The ex-LEAR Network Germany logo"

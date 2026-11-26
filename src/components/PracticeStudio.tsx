@@ -504,25 +504,25 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
   const totalBeats = TIME_SIGNATURE_BEATS[metroTimeSig];
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex flex-col min-w-0 overflow-hidden">
+    <div className="h-[calc(100dvh-3.5rem)] flex flex-col min-w-0 overflow-hidden">
       {/* Top Track Navigation & External Links */}
-      <div className="px-5 lg:px-6 py-3 border-b border-white/[0.08] bg-[#0F131C] flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex flex-wrap items-center gap-3 min-w-0">
+      <div className="px-3 sm:px-5 lg:px-6 py-2 sm:py-3 border-b border-white/[0.08] bg-[#0F131C] flex flex-wrap items-center justify-between gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 md:flex-initial">
           <button
             type="button"
             onClick={onBackToSetlist}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Setlist</span>
+            <span className="hidden sm:inline">Setlist</span>
           </button>
 
-          <div className="relative min-w-[210px] max-w-xs sm:max-w-sm">
+          <div className="relative flex-1 min-w-0 sm:min-w-[210px] sm:max-w-sm">
             <select
               aria-label="Select song"
               value={song.id}
               onChange={(e) => onSelectSong(e.target.value)}
-              className="w-full appearance-none bg-[#161C28] border border-white/[0.1] rounded-lg pl-3 pr-9 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-amber-500/60 truncate"
+              className="w-full appearance-none bg-[#161C28] border border-white/[0.1] rounded-lg pl-3 pr-8 py-1.5 text-xs sm:text-sm font-semibold text-white focus:outline-none focus:border-amber-500/60 truncate"
             >
               {songs.map((s, idx) => (
                 <option key={s.id} value={s.id} className="bg-[#131822]">
@@ -533,7 +533,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
             <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-400 tabular-nums whitespace-nowrap">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 tabular-nums whitespace-nowrap shrink-0">
             <span>
               Key <strong className="font-mono text-amber-400">{transposedKey}</strong>
               {transpose !== 0 && (
@@ -547,13 +547,13 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar max-w-full shrink-0">
           {song.referenceUrl && (
             <a
               href={song.referenceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
             >
               <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
               <span>Reference</span>
@@ -563,7 +563,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
             href={song.chordsUrl || buildFallbackChordsUrl(song.title, song.artist)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
           >
             <FileMusic className="w-3.5 h-3.5 text-emerald-400" />
             <span>Chords / Tabs</span>
@@ -572,7 +572,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
             href={song.lyricsUrl || buildFallbackLyricsUrl(song.title, song.artist)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
           >
             <AlignLeft className="w-3.5 h-3.5 text-sky-400" />
             <span>Lyrics (Web)</span>
@@ -581,10 +581,10 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
       </div>
 
       {/* Sheet Formatting Toolbar */}
-      <div className="px-5 lg:px-6 py-2.5 border-b border-white/[0.08] bg-[#0B0E14] flex flex-wrap items-center justify-between gap-2.5 shrink-0">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="px-3 sm:px-5 lg:px-6 py-2 sm:py-2.5 border-b border-white/[0.08] bg-[#0B0E14] flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Transpose Control */}
-          <div className="flex items-center gap-1 bg-[#131822] border border-white/[0.08] rounded-lg p-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-[#131822] border border-white/[0.08] rounded-lg p-0.5 sm:p-1">
             <button
               type="button"
               onClick={() => setTranspose((t) => Math.max(-6, t - 1))}
@@ -597,9 +597,10 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
               type="button"
               onClick={() => setTranspose(0)}
               title="Reset transpose"
-              className="px-2 py-1 text-xs font-mono tabular-nums text-amber-400 hover:text-amber-300 whitespace-nowrap"
+              className="px-1.5 sm:px-2 py-1 text-xs font-mono tabular-nums text-amber-400 hover:text-amber-300 whitespace-nowrap"
             >
-              Transpose: {transpose === 0 ? 'Original' : transpose > 0 ? `+${transpose}` : transpose}
+              <span className="hidden sm:inline">Transpose: </span>
+              {transpose === 0 ? 'Orig' : transpose > 0 ? `+${transpose}` : transpose}
             </button>
             <button
               type="button"
@@ -613,13 +614,13 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
 
           {/* Text Size */}
           {!editingChart && (
-            <div className="flex items-center gap-0.5 p-1 bg-[#131822] border border-white/[0.08] rounded-lg">
+            <div className="flex items-center gap-0.5 p-0.5 sm:p-1 bg-[#131822] border border-white/[0.08] rounded-lg">
               {(['sm', 'md', 'lg'] as const).map((sz) => (
                 <button
                   key={sz}
                   type="button"
                   onClick={() => setFontSize(sz)}
-                  className={`px-2 py-1 text-xs font-medium uppercase rounded transition-colors ${
+                  className={`px-1.5 sm:px-2 py-1 text-xs font-medium uppercase rounded transition-colors ${
                     fontSize === sz
                       ? 'bg-[#212A3B] text-white'
                       : 'text-slate-400 hover:text-slate-200'
@@ -655,7 +656,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
             <button
               type="button"
               onClick={() => setEditingChart(false)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-[#1A2130] text-slate-300 hover:text-white rounded-lg whitespace-nowrap"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#1A2130] text-slate-300 hover:text-white rounded-lg whitespace-nowrap"
             >
               <X className="w-3.5 h-3.5" />
               Cancel
@@ -664,30 +665,32 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
               type="button"
               disabled={savingChart}
               onClick={() => void handleSaveChart()}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-amber-500 text-[#0B0E14] hover:bg-amber-400 rounded-lg disabled:opacity-60 whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-semibold bg-amber-500 text-[#0B0E14] hover:bg-amber-400 rounded-lg disabled:opacity-60 whitespace-nowrap"
             >
               <Save className="w-3.5 h-3.5" />
-              {savingChart ? 'Saving...' : 'Save Chords & Lyrics'}
+              {savingChart ? 'Saving...' : 'Save'}
             </button>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               disabled={fetchingLyrics}
               onClick={() => void runLyricsLookup(song)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#131822] hover:bg-[#1A2130] border border-white/[0.08] text-slate-300 hover:text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium bg-[#131822] hover:bg-[#1A2130] border border-white/[0.08] text-slate-300 hover:text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-60"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${fetchingLyrics ? 'animate-spin' : ''}`} />
-              <span>{fetchingLyrics ? 'Fetching...' : 'Fetch Lyrics'}</span>
+              <span className="sm:hidden">{fetchingLyrics ? '...' : 'Fetch'}</span>
+              <span className="hidden sm:inline">{fetchingLyrics ? 'Fetching...' : 'Fetch Lyrics'}</span>
             </button>
             <button
               type="button"
               onClick={startEditChart}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.1] text-white rounded-lg transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold bg-[#161C28] hover:bg-[#1F283A] border border-white/[0.1] text-white rounded-lg transition-colors whitespace-nowrap"
             >
               <Edit3 className="w-3.5 h-3.5 text-amber-400" />
-              <span>Edit Chords &amp; Lyrics</span>
+              <span className="sm:hidden">Edit</span>
+              <span className="hidden sm:inline">Edit Chords &amp; Lyrics</span>
             </button>
           </div>
         )}
@@ -821,14 +824,14 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
             onTouchStart={() => {
               if (autoScroll) setAutoScroll(false);
             }}
-            className="flex-1 overflow-y-auto px-5 lg:px-12 py-8"
+            className="flex-1 overflow-y-auto px-4 sm:px-5 lg:px-12 py-5 sm:py-8"
           >
-            <div className={`mx-auto space-y-6 pb-16 ${twoColumns ? 'max-w-6xl' : 'max-w-4xl'}`}>
+            <div className={`mx-auto space-y-5 sm:space-y-6 pb-16 ${twoColumns ? 'max-w-6xl' : 'max-w-4xl'}`}>
               {/* Song Title, Band Lineup & Chords Header */}
-              <div className="pb-5 border-b border-white/[0.08] space-y-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-4">
-                  <div>
-                    <h2 className="text-3xl font-bold text-white">{song.title}</h2>
+              <div className="pb-4 sm:pb-5 border-b border-white/[0.08] space-y-3 sm:space-y-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 sm:gap-4">
+                  <div className="min-w-0">
+                    <h2 className="text-xl sm:text-3xl font-bold text-white leading-tight">{song.title}</h2>
                     <p className="text-sm text-slate-400 mt-1">
                       {song.artist || 'Unknown artist'}
                       {song.recommendedBy ? ` · Recommended by ${song.recommendedBy}` : ''}
@@ -992,8 +995,77 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
           </div>
 
           {/* Pinned Bottom Rehearsal Console: Auto-Scroll + Studio Metronome */}
-          <div className="px-5 lg:px-6 py-3 border-t border-white/[0.1] bg-[#0F131C] shrink-0">
-            <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="px-3 sm:px-5 lg:px-6 py-2 sm:py-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] border-t border-white/[0.1] bg-[#0F131C] shrink-0">
+            {/* Compact Mobile Quick Bar */}
+            <div className="md:hidden flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  onClick={toggleAutoScroll}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                    autoScroll
+                      ? 'bg-amber-500 text-[#0B0E14]'
+                      : 'bg-[#1D2535] text-white'
+                  }`}
+                >
+                  {autoScroll ? (
+                    <Pause className="w-3.5 h-3.5 fill-current" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
+                  <span>{autoScroll ? 'Pause' : 'Scroll'}</span>
+                  <span className="font-mono text-[11px] opacity-80">{scrollSpeed.toFixed(1)}x</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleMetronome}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                    metroPlaying
+                      ? 'bg-amber-500 text-[#0B0E14]'
+                      : 'bg-[#1D2535] text-white'
+                  }`}
+                >
+                  {metroPlaying ? (
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                  ) : (
+                    <Timer className="w-3.5 h-3.5" />
+                  )}
+                  <span className="font-mono tabular-nums">{metroBpm}</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={scrollToTop}
+                  aria-label="Scroll back to top"
+                  className="p-2 text-slate-400 hover:text-white bg-[#131822] border border-white/[0.08] rounded-lg"
+                >
+                  <ArrowUpToLine className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileConsoleExpanded((v) => !v)}
+                  aria-label="Toggle rehearsal controls"
+                  className={`inline-flex items-center gap-1 px-2.5 py-2 text-xs font-medium rounded-lg border transition-colors ${
+                    mobileConsoleExpanded
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                      : 'bg-[#131822] border-white/[0.08] text-slate-300'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>{mobileConsoleExpanded ? 'Hide' : 'Controls'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Full Console (Always visible on md+, expandable on mobile) */}
+            <div
+              className={`${
+                mobileConsoleExpanded ? 'flex mt-2.5 pt-2.5 border-t border-white/[0.08]' : 'hidden'
+              } md:flex max-w-6xl mx-auto flex-wrap items-center justify-between gap-2.5 sm:gap-3`}
+            >
               {/* Auto-Scroll Console */}
               <div className="flex flex-wrap items-center gap-2.5 bg-[#131822] border border-white/[0.08] rounded-xl px-3 py-2">
                 <button

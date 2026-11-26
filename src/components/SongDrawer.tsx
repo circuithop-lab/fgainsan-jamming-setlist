@@ -128,8 +128,8 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="fixed inset-0 bg-black/70" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-xl bg-[#111621] border-l border-white/[0.1] h-full flex flex-col">
-        <div className="h-14 px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+      <div className="relative z-10 w-full max-w-xl bg-[#111621] border-l border-white/[0.1] h-[100dvh] flex flex-col">
+        <div className="h-14 px-4 sm:px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0">
           <h2 className="text-base font-semibold text-white">
             {editingSong ? 'Edit Song' : 'Add Song to Setlist'}
           </h2>
@@ -137,13 +137,13 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close drawer"
-            className="p-1.5 text-slate-400 hover:text-white rounded-md"
+            className="p-2 text-slate-400 hover:text-white rounded-md"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           {error && (
             <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
               {error}
@@ -298,7 +298,7 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
             />
           </div>
 
-          <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-3">
+          <div className="pt-4 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
             {editingSong && onDelete ? (
               confirmDelete ? (
                 <div className="flex items-center gap-2">
