@@ -22,6 +22,7 @@ import {
   Volume2,
   VolumeX,
   Timer,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   GrooveStyle,
@@ -90,6 +91,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
   const [twoColumns, setTwoColumns] = useState(false);
   const [autoScroll, setAutoScroll] = useState(false);
   const [scrollSpeed, setScrollSpeed] = useState(1.0);
+  const [mobileConsoleExpanded, setMobileConsoleExpanded] = useState(false);
   const lyricsScrollRef = useRef<HTMLDivElement | null>(null);
   const scrollFloatRef = useRef(0);
 
