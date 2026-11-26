@@ -6,6 +6,7 @@ import {
   Users,
   Copy,
   Check,
+  Link2,
   LogOut,
   X,
   ChevronDown,
@@ -45,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNotify,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyCode = async () => {
     if (!activeBand?.inviteCode) return;
@@ -55,6 +57,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       onNotify(`Invite code: ${activeBand.inviteCode}`);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (!activeBand?.inviteCode) return;
+    const url = `${window.location.origin}${window.location.pathname}?join=${encodeURIComponent(activeBand.inviteCode)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      onNotify('Invite link copied — send it to your bandmates to sync!');
+      window.setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      onNotify(`Share link: ${url}`);
     }
   };
 
@@ -113,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 {bands.map((b) => (
                   <option key={b.id} value={b.id} className="bg-[#131822] text-white">
-                    {b.name}
+                    {b.name} ({b.inviteCode})
                   </option>
                 ))}
               </select>
@@ -121,22 +136,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCopyCode}
-            className="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-md bg-[#161C28] hover:bg-[#1C2434] border border-white/[0.06] text-xs transition-colors"
-            title="Copy invite code to share this setlist with your band"
-          >
-            <span className="text-slate-400 whitespace-nowrap">Invite</span>
-            <span className="font-mono font-medium text-amber-400 tabular-nums tracking-wider">
-              {activeBand.inviteCode}
-            </span>
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            ) : (
-              <Copy className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            )}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="flex-1 min-w-0 flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-md bg-[#161C28] hover:bg-[#1C2434] border border-white/[0.06] text-xs transition-colors"
+              title="Copy invite code to share this setlist with your band"
+            >
+              <span className="font-mono font-medium text-amber-400 tabular-nums tracking-wider truncate">
+                {activeBand.inviteCode}
+              </span>
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyInviteLink}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-medium transition-colors whitespace-nowrap shrink-0"
+              title="Copy one-click join link for bandmates"
+            >
+              {copiedLink ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              ) : (
+                <Link2 className="w-3.5 h-3.5 shrink-0" />
+              )}
+              <span>{copiedLink ? 'Copied' : 'Link'}</span>
+            </button>
+          </div>
+          <div className="text-[11px] text-slate-500 tabular-nums">
+            {activeBand.memberUids.length} synced{' '}
+            {activeBand.memberUids.length === 1 ? 'account' : 'accounts'}
+          </div>
         </div>
       )}
 

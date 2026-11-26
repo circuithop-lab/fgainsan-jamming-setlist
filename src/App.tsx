@@ -46,6 +46,7 @@ export default function App() {
   const [songsById, setSongsById] = useState<Record<string, Song>>({});
   const [songsLoading, setSongsLoading] = useState(true);
   const [bootstrapping, setBootstrapping] = useState(false);
+  const [joiningFromLink, setJoiningFromLink] = useState(false);
 
   const [activeView, setActiveView] = useState<WorkspaceView>('setlist');
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
@@ -58,7 +59,25 @@ export default function App() {
   const [fatalError, setFatalError] = useState<Error | null>(null);
 
   const bootstrappedUidRef = useRef<string | null>(null);
+  const processedInviteRef = useRef<string | null>(null);
   const toastTimerRef = useRef<number | null>(null);
+
+  // Capture ?join=INVITE_CODE from URL before Google sign-in
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const joinCode = params.get('join')?.trim().toUpperCase();
+      if (joinCode && joinCode.length >= 6) {
+        window.sessionStorage.setItem('stagedeck_pending_invite', joinCode);
+        params.delete('join');
+        const nextSearch = params.toString();
+        const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', nextUrl);
+      }
+    } catch {
+      // Ignore storage/history errors in restricted browsers
+    }
+  }, []);
 
   if (fatalError) {
     throw fatalError;
@@ -142,9 +161,46 @@ export default function App() {
     };
   }, [authReady, user]);
 
-  // 3. Auto-bootstrap starter band workspace on first-ever login
+  // 3. Auto-join via ?join= link OR auto-bootstrap starter band workspace on first-ever login
   useEffect(() => {
     if (!user || !bandsLoaded) return;
+
+    let pendingCode = '';
+    try {
+      pendingCode = window.sessionStorage.getItem('stagedeck_pending_invite') || '';
+    } catch {
+      pendingCode = '';
+    }
+
+    if (pendingCode && processedInviteRef.current !== `${user.uid}:${pendingCode}`) {
+      processedInviteRef.current = `${user.uid}:${pendingCode}`;
+      try {
+        window.sessionStorage.removeItem('stagedeck_pending_invite');
+      } catch {
+        // ignore
+      }
+      setJoiningFromLink(true);
+      void (async () => {
+        try {
+          const res = await joinBandByInviteCode(user, pendingCode);
+          setActiveBandId(res.bandId);
+          setActiveView('setlist');
+          setMemberFilter('');
+          showToast(
+            res.alreadyMember
+              ? `Switched to "${res.bandName}"`
+              : `Joined "${res.bandName}" — now synced with your band!`
+          );
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : 'Unable to join via invite link.');
+        } finally {
+          setJoiningFromLink(false);
+        }
+      })();
+      return;
+    }
+
+    if (joiningFromLink) return;
     if (bands.length > 0) return;
     if (bootstrappedUidRef.current === user.uid) return;
 
@@ -161,7 +217,7 @@ export default function App() {
         setBootstrapping(false);
       }
     })();
-  }, [user, bandsLoaded, bands.length]);
+  }, [user, bandsLoaded, bands.length, joiningFromLink]);
 
   const activeBand = useMemo(
     () => bands.find((b) => b.id === activeBandId) || bands[0] || null,
@@ -375,12 +431,16 @@ export default function App() {
     return <AuthScreen />;
   }
 
-  if (!activeBand || bootstrapping) {
+  if (!activeBand || bootstrapping || joiningFromLink) {
     return (
       <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center text-slate-300">
         <div className="flex items-center gap-3 text-sm">
           <Disc3 className="w-5 h-5 text-amber-400 animate-spin" />
-          <span>Setting up your band rehearsal workspace...</span>
+          <span>
+            {joiningFromLink
+              ? 'Joining your band workspace...'
+              : 'Setting up your band rehearsal workspace...'}
+          </span>
         </div>
       </div>
     );

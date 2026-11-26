@@ -4,6 +4,7 @@ import {
   Trash2,
   Copy,
   Check,
+  Link2,
   KeyRound,
   Plus,
   ArrowRight,
@@ -40,6 +41,7 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
   const [newBandName, setNewBandName] = useState('');
   const [includeStarters, setIncludeStarters] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [busy, setBusy] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
@@ -109,6 +111,18 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       onNotify(`Invite code: ${band.inviteCode}`);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}?join=${encodeURIComponent(band.inviteCode)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      onNotify('One-click invite link copied — send it to your bandmates!');
+      window.setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      onNotify(`Share link: ${url}`);
     }
   };
 
@@ -239,14 +253,24 @@ export const BandRosterView: React.FC<BandRosterViewProps> = ({
               <span className="font-mono text-lg sm:text-xl font-semibold tracking-widest text-amber-400 tabular-nums">
                 {band.inviteCode}
               </span>
-              <button
-                type="button"
-                onClick={handleCopyInvite}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#1A2130] hover:bg-[#253045] text-white rounded-md transition-colors whitespace-nowrap"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied' : 'Copy Code'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyInvite}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#1A2130] hover:bg-[#253045] text-white rounded-md transition-colors whitespace-nowrap"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied' : 'Code'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyInviteLink}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-[#0B0E14] rounded-md transition-colors whitespace-nowrap"
+                >
+                  {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? 'Link Copied' : 'Copy Invite Link'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="text-xs text-slate-400 tabular-nums">
