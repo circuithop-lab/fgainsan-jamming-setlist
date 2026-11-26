@@ -23,6 +23,7 @@ import {
   VolumeX,
   Timer,
   SlidersHorizontal,
+  Sparkles,
 } from 'lucide-react';
 import {
   GrooveStyle,
@@ -41,6 +42,7 @@ import {
   isPlaceholderLyrics,
   LyricsMatch,
 } from '../services/lyricsLookup';
+import { detectSongBpm } from '../services/bpmLookup';
 import {
   StudioMetronome,
   TIME_SIGNATURE_BEATS,
@@ -101,6 +103,7 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
   const [metroTimeSig, setMetroTimeSig] = useState<TimeSignature>('4/4');
   const [metroMuted, setMetroMuted] = useState(false);
   const [activeBeat, setActiveBeat] = useState<number>(-1);
+  const [detectingBpm, setDetectingBpm] = useState(false);
   const metroRef = useRef<StudioMetronome | null>(null);
   const tapTimesRef = useRef<number[]>([]);
 
@@ -202,6 +205,40 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
       const idx = TIME_SIGNATURES.indexOf(prev);
       return TIME_SIGNATURES[(idx + 1) % TIME_SIGNATURES.length];
     });
+  };
+
+  const handleAutoDetectBpm = async (saveToSetlist: boolean) => {
+    if (!song || detectingBpm) return;
+    setDetectingBpm(true);
+    try {
+      const result = await detectSongBpm(song.title, song.artist || '');
+      setMetroBpm(result.bpm);
+      if (editingChart) {
+        setDraftBpm(result.bpm);
+      }
+      if (saveToSetlist) {
+        await onUpdateSongChart(song.id, {
+          keyChord: song.keyChord || 'C',
+          bpm: result.bpm,
+          grooveStyle: song.grooveStyle || 'rock',
+          chordProgression:
+            song.chordProgression && song.chordProgression.length > 0
+              ? song.chordProgression
+              : [song.keyChord || 'C'],
+          lyricsWithChords: song.lyricsWithChords || '',
+          referenceUrl: song.referenceUrl || '',
+          chordsUrl: song.chordsUrl || '',
+          lyricsUrl: song.lyricsUrl || '',
+        });
+        onNotify(`Auto-detected & saved ${result.bpm} BPM (${result.trackName})`);
+      } else {
+        onNotify(`Detected ${result.bpm} BPM (${result.artistName} — ${result.trackName})`);
+      }
+    } catch (err) {
+      onNotify(err instanceof Error ? err.message : 'Unable to detect BPM automatically.');
+    } finally {
+      setDetectingBpm(false);
+    }
   };
 
   const hasSavedRealLyrics = useMemo(
@@ -717,9 +754,25 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400" htmlFor="chart-bpm">
-                  BPM
-                </label>
+                <div className="flex items-center justify-between gap-1">
+                  <label className="text-xs text-slate-400" htmlFor="chart-bpm">
+                    BPM
+                  </label>
+                  <button
+                    type="button"
+                    disabled={detectingBpm}
+                    onClick={() => void handleAutoDetectBpm(false)}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400 hover:text-amber-300 disabled:opacity-50"
+                    title="Auto-detect BPM from studio recording"
+                  >
+                    {detectingBpm ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    <span>Auto</span>
+                  </button>
+                </div>
                 <input
                   id="chart-bpm"
                   type="number"
@@ -1207,6 +1260,22 @@ export const PracticeStudio: React.FC<PracticeStudioProps> = ({
                   className="px-2.5 py-1.5 text-xs font-semibold bg-[#1B2230] hover:bg-[#263044] border border-white/[0.08] text-slate-200 rounded-lg transition-colors whitespace-nowrap"
                 >
                   Tap
+                </button>
+
+                {/* Auto-Detect BPM from Studio Audio */}
+                <button
+                  type="button"
+                  disabled={detectingBpm}
+                  onClick={() => void handleAutoDetectBpm(true)}
+                  title="Automatically analyze the song's studio recording to detect & save its BPM"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 rounded-lg transition-colors whitespace-nowrap disabled:opacity-50"
+                >
+                  {detectingBpm ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5" />
+                  )}
+                  <span>{detectingBpm ? 'Analyzing...' : 'Auto BPM'}</span>
                 </button>
 
                 {/* Time Signature Toggle */}

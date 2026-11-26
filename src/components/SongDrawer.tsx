@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import {
   createEmptyAssignments,
   GrooveStyle,
@@ -8,6 +8,7 @@ import {
   SongStatus,
 } from '../types';
 import { SongFormInput } from '../services/bandService';
+import { detectSongBpm } from '../services/bpmLookup';
 
 interface SongDrawerProps {
   open: boolean;
@@ -42,11 +43,21 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detectingBpm, setDetectingBpm] = useState(false);
+  const [bpmHint, setBpmHint] = useState<string | null>(null);
+  const [bpmManuallyEdited, setBpmManuallyEdited] = useState(false);
+  const bpmAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      bpmAbortRef.current?.abort();
+      return;
+    }
     setError(null);
     setConfirmDelete(false);
+    setDetectingBpm(false);
+    setBpmHint(null);
+    setBpmManuallyEdited(false);
     if (editingSong) {
       setTitle(editingSong.title);
       setArtist(editingSong.artist);
@@ -73,6 +84,43 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
       setLyricsWithChords('');
     }
   }, [open, editingSong, defaultRecommendedBy]);
+
+  const runBpmDetection = async (targetTitle: string, targetArtist: string, manual = false) => {
+    if (!targetTitle.trim()) {
+      if (manual) setBpmHint('Enter a song title first.');
+      return;
+    }
+    bpmAbortRef.current?.abort();
+    const controller = new AbortController();
+    bpmAbortRef.current = controller;
+    setDetectingBpm(true);
+    if (manual) setBpmHint('Analyzing audio tempo...');
+    try {
+      const result = await detectSongBpm(targetTitle, targetArtist, controller.signal);
+      if (controller.signal.aborted) return;
+      setBpm(result.bpm);
+      setBpmHint(`Auto: ${result.bpm} BPM (${result.artistName} — ${result.trackName})`);
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      if (manual) {
+        setBpmHint(err instanceof Error ? err.message : 'Could not detect BPM automatically.');
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setDetectingBpm(false);
+      }
+    }
+  };
+
+  // Auto-detect BPM when adding a new song as the user enters title/artist
+  useEffect(() => {
+    if (!open || editingSong || bpmManuallyEdited) return;
+    if (title.trim().length < 3) return;
+    const timer = window.setTimeout(() => {
+      void runBpmDetection(title, artist, false);
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [open, editingSong, bpmManuallyEdited, title, artist]);
 
   if (!open) return null;
 
@@ -221,18 +269,45 @@ export const SongDrawer: React.FC<SongDrawerProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-300" htmlFor="song-bpm">
-                BPM
-              </label>
+              <div className="flex items-center justify-between gap-2">
+                <label className="block text-xs font-medium text-slate-300" htmlFor="song-bpm">
+                  BPM
+                </label>
+                <button
+                  type="button"
+                  disabled={detectingBpm || !title.trim()}
+                  onClick={() => {
+                    setBpmManuallyEdited(false);
+                    void runBpmDetection(title, artist, true);
+                  }}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-400 hover:text-amber-300 disabled:opacity-40 transition-colors"
+                  title="Automatically detect BPM from the song's studio recording"
+                >
+                  {detectingBpm ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3 h-3" />
+                  )}
+                  <span>{detectingBpm ? 'Detecting...' : 'Auto'}</span>
+                </button>
+              </div>
               <input
                 id="song-bpm"
                 type="number"
                 min={SCHEMA_LIMITS.BPM_MIN}
                 max={SCHEMA_LIMITS.BPM_MAX}
                 value={bpm}
-                onChange={(e) => setBpm(Number(e.target.value))}
+                onChange={(e) => {
+                  setBpmManuallyEdited(true);
+                  setBpm(Number(e.target.value));
+                }}
                 className="w-full bg-[#161C28] border border-white/[0.08] rounded-lg px-3 py-2 text-sm font-mono tabular-nums text-white focus:outline-none focus:border-amber-500/60"
               />
+              {bpmHint && (
+                <p className="text-[11px] text-slate-400 leading-snug truncate" title={bpmHint}>
+                  {bpmHint}
+                </p>
+              )}
             </div>
           </div>
 
