@@ -4,6 +4,7 @@ import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { Menu, Plus, Disc3 } from 'lucide-react';
 import { AuthScreen } from './components/AuthScreen';
 import { BandRosterView } from './components/BandRosterView';
+import { EquipmentView } from './components/EquipmentView';
 import { PracticeStudio } from './components/PracticeStudio';
 import { SetlistMatrix } from './components/SetlistMatrix';
 import { Sidebar } from './components/Sidebar';
@@ -14,6 +15,8 @@ import {
   deleteSongFromBand,
   ensureUserProfile,
   joinBandByInviteCode,
+  parseEquipmentItems,
+  saveBandEquipment,
   SongFormInput,
   switchActiveBand,
   updateBandName,
@@ -23,7 +26,15 @@ import {
   updateSongFull,
 } from './services/bandService';
 import { auth, db, handleFirestoreError, OperationType, signOutUser } from './services/firebase';
-import { Band, GrooveStyle, InstrumentSlotKey, Song, WorkspaceView } from './types';
+import {
+  Band,
+  EquipmentItem,
+  GEAR_DOC_ID,
+  GrooveStyle,
+  InstrumentSlotKey,
+  Song,
+  WorkspaceView,
+} from './types';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -232,11 +243,21 @@ export default function App() {
     if (!activeBand) return [];
     const list: Song[] = [];
     for (const id of activeBand.songIds) {
+      if (id === GEAR_DOC_ID) continue;
       const song = songsById[id];
       if (song) list.push(song);
     }
     return list;
   }, [activeBand, songsById]);
+
+  const equipmentItems = useMemo(
+    () => parseEquipmentItems(songsById[GEAR_DOC_ID]?.lyricsWithChords),
+    [songsById]
+  );
+
+  const hasEquipmentDoc = Boolean(
+    songsById[GEAR_DOC_ID] || activeBand?.songIds.includes(GEAR_DOC_ID)
+  );
 
   // Handlers
   const handleSelectBand = async (bandId: string) => {
@@ -333,6 +354,11 @@ export default function App() {
     showToast(`Created workspace "${name}"`);
   };
 
+  const handleSaveEquipment = async (nextItems: EquipmentItem[]) => {
+    if (!activeBand || !user) return;
+    await saveBandEquipment(activeBand.id, user.uid, nextItems, hasEquipmentDoc);
+  };
+
   // Loading & Auth gates
   if (!authReady) {
     return (
@@ -365,7 +391,9 @@ export default function App() {
       ? 'Setlist Matrix'
       : activeView === 'practice'
         ? 'Chords & Lyrics'
-        : 'Band Roster & Sharing';
+        : activeView === 'equipment'
+          ? 'Equipment & Gear'
+          : 'Band Roster & Sharing';
 
   return (
     <div className="min-h-[100dvh] bg-[#0B0E14] text-[#F1F5F9] flex">
@@ -457,6 +485,15 @@ export default function App() {
               setEditingSong(null);
               setDrawerOpen(true);
             }}
+            onNotify={showToast}
+          />
+        )}
+
+        {activeView === 'equipment' && (
+          <EquipmentView
+            band={activeBand}
+            items={equipmentItems}
+            onSaveEquipment={handleSaveEquipment}
             onNotify={showToast}
           />
         )}

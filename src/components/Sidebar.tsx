@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Table2,
   FileMusic,
+  Speaker,
   Users,
   Copy,
   Check,
@@ -67,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: { id: WorkspaceView; label: string; icon: React.ReactNode }[] = [
     { id: 'setlist', label: 'Setlist Matrix', icon: <Table2 className="w-4 h-4 shrink-0" /> },
     { id: 'practice', label: 'Chords & Lyrics', icon: <FileMusic className="w-4 h-4 shrink-0" /> },
+    { id: 'equipment', label: 'Equipment & Gear', icon: <Speaker className="w-4 h-4 shrink-0" /> },
     { id: 'roster', label: 'Band Roster', icon: <Users className="w-4 h-4 shrink-0" /> },
   ];
 

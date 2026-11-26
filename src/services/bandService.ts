@@ -12,6 +12,8 @@ import {
 import { STARTER_ROSTER, STARTER_SONGS } from '../data/starterData';
 import {
   createEmptyAssignments,
+  EquipmentItem,
+  GEAR_DOC_ID,
   GrooveStyle,
   INSTRUMENT_SLOTS,
   SCHEMA_LIMITS,
@@ -487,5 +489,96 @@ export async function deleteSongFromBand(bandId: string, songId: string): Promis
     await batch.commit();
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, songPath);
+  }
+}
+
+export function parseEquipmentItems(raw?: string): EquipmentItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is EquipmentItem => Boolean(item && typeof item.id === 'string' && typeof item.name === 'string'))
+      .map((item) => ({
+        id: String(item.id),
+        name: String(item.name).slice(0, 80),
+        category:
+          item.category === 'instruments' ||
+          item.category === 'amps_pa' ||
+          item.category === 'mics_cables' ||
+          item.category === 'accessories'
+            ? item.category
+            : 'instruments',
+        quantity: Math.max(1, Math.min(99, Number(item.quantity) || 1)),
+        broughtBy: typeof item.broughtBy === 'string' ? item.broughtBy.slice(0, 60) : '',
+        status:
+          item.status === 'confirmed' || item.status === 'packed' || item.status === 'needed'
+            ? item.status
+            : item.broughtBy
+              ? 'confirmed'
+              : 'needed',
+        notes: typeof item.notes === 'string' ? item.notes.slice(0, 120) : '',
+      }));
+  } catch {
+    return [];
+  }
+}
+
+export async function saveBandEquipment(
+  bandId: string,
+  userId: string,
+  items: EquipmentItem[],
+  hasExistingGearDoc: boolean
+): Promise<void> {
+  const serialized = JSON.stringify(items);
+  if (serialized.length > SCHEMA_LIMITS.LYRICS_MAX) {
+    throw new Error('Equipment list size limit reached. Please remove unused items or shorten notes.');
+  }
+
+  const gearPath = `bands/${bandId}/songs/${GEAR_DOC_ID}`;
+  const gearRef = doc(db, 'bands', bandId, 'songs', GEAR_DOC_ID);
+
+  if (hasExistingGearDoc) {
+    try {
+      await updateDoc(gearRef, {
+        lyricsWithChords: serialized,
+        updatedAt: serverTimestamp(),
+      });
+      return;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, gearPath);
+    }
+  }
+
+  const batch = writeBatch(db);
+  batch.set(gearRef, {
+    bandId,
+    orderIndex: 9999,
+    title: 'StageDeck Equipment Checklist',
+    artist: 'System',
+    recommendedBy: '',
+    referenceUrl: '',
+    chordsUrl: '',
+    lyricsUrl: '',
+    keyChord: 'C',
+    bpm: 120,
+    status: 'shelved',
+    grooveStyle: 'rock',
+    chordProgression: ['C'],
+    lyricsWithChords: serialized,
+    assignments: createEmptyAssignments(),
+    createdBy: userId,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.update(doc(db, 'bands', bandId), {
+    songIds: arrayUnion(GEAR_DOC_ID),
+    updatedAt: serverTimestamp(),
+  });
+
+  try {
+    await batch.commit();
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, gearPath);
   }
 }

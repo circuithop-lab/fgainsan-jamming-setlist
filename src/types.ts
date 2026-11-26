@@ -145,7 +145,30 @@ export interface StoredStemFile {
   updatedAt: number;
 }
 
-export type WorkspaceView = 'setlist' | 'practice' | 'roster';
+export type WorkspaceView = 'setlist' | 'practice' | 'equipment' | 'roster';
+
+export const GEAR_DOC_ID = 'stagedeck-equipment-checklist';
+
+export type EquipmentCategory = 'instruments' | 'amps_pa' | 'mics_cables' | 'accessories';
+
+export type EquipmentStatus = 'needed' | 'confirmed' | 'packed';
+
+export interface EquipmentItem {
+  id: string;
+  name: string;
+  category: EquipmentCategory;
+  quantity: number;
+  broughtBy: string;
+  status: EquipmentStatus;
+  notes: string;
+}
+
+export const EQUIPMENT_CATEGORIES: { value: EquipmentCategory; label: string; shortLabel: string }[] = [
+  { value: 'instruments', label: 'Instruments', shortLabel: 'Instruments' },
+  { value: 'amps_pa', label: 'Amps & PA', shortLabel: 'Amps & PA' },
+  { value: 'mics_cables', label: 'Mics & Cables', shortLabel: 'Mics & Cables' },
+  { value: 'accessories', label: 'Stands & Accessories', shortLabel: 'Accessories' },
+];
 
 export function createEmptyAssignments(): SongAssignments {
   return {
