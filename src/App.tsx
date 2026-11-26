@@ -36,6 +36,8 @@ import {
   WorkspaceView,
 } from './types';
 
+const DEFAULT_BAND_INVITE_CODE = '7N2-34KE';
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -161,7 +163,7 @@ export default function App() {
     };
   }, [authReady, user]);
 
-  // 3. Auto-join via ?join= link OR auto-bootstrap starter band workspace on first-ever login
+  // 3. Auto-join via ?join= link, or auto-sync everyone into the shared default band (7N2-34KE)
   useEffect(() => {
     if (!user || !bandsLoaded) return;
 
@@ -172,27 +174,37 @@ export default function App() {
       pendingCode = '';
     }
 
-    if (pendingCode && processedInviteRef.current !== `${user.uid}:${pendingCode}`) {
-      processedInviteRef.current = `${user.uid}:${pendingCode}`;
-      try {
-        window.sessionStorage.removeItem('stagedeck_pending_invite');
-      } catch {
-        // ignore
+    const alreadyInDefaultBand = bands.some(
+      (b) => b.inviteCode.toUpperCase() === DEFAULT_BAND_INVITE_CODE
+    );
+    const targetCode =
+      pendingCode || (!alreadyInDefaultBand ? DEFAULT_BAND_INVITE_CODE : '');
+
+    if (targetCode && processedInviteRef.current !== `${user.uid}:${targetCode}`) {
+      processedInviteRef.current = `${user.uid}:${targetCode}`;
+      if (pendingCode) {
+        try {
+          window.sessionStorage.removeItem('stagedeck_pending_invite');
+        } catch {
+          // ignore
+        }
       }
       setJoiningFromLink(true);
       void (async () => {
         try {
-          const res = await joinBandByInviteCode(user, pendingCode);
+          const res = await joinBandByInviteCode(user, targetCode);
           setActiveBandId(res.bandId);
           setActiveView('setlist');
           setMemberFilter('');
           showToast(
             res.alreadyMember
               ? `Switched to "${res.bandName}"`
-              : `Joined "${res.bandName}" — now synced with your band!`
+              : `Connected to "${res.bandName}" — now synced with your band!`
           );
         } catch (err) {
-          showToast(err instanceof Error ? err.message : 'Unable to join via invite link.');
+          if (pendingCode) {
+            showToast(err instanceof Error ? err.message : 'Unable to join via invite link.');
+          }
         } finally {
           setJoiningFromLink(false);
         }
@@ -217,7 +229,7 @@ export default function App() {
         setBootstrapping(false);
       }
     })();
-  }, [user, bandsLoaded, bands.length, joiningFromLink]);
+  }, [user, bandsLoaded, bands, joiningFromLink]);
 
   const activeBand = useMemo(
     () => bands.find((b) => b.id === activeBandId) || bands[0] || null,
