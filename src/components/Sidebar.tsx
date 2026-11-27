@@ -7,6 +7,7 @@ import {
   Copy,
   Check,
   Link2,
+  Mail,
   LogOut,
   X,
   ChevronDown,
@@ -257,6 +258,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Contact Support */}
+      <div className="px-3 py-2.5 border-t border-white/[0.08] shrink-0">
+        <a
+          href="mailto:fgainsan@gmail.com?subject=StageDeck%20Support"
+          className="flex flex-col gap-1.5 px-2.5 py-2 rounded-lg bg-[#131822] hover:bg-[#1A2130] border border-white/[0.06] transition-colors group"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex items-center bg-white rounded px-1.5 py-0.5">
+              <img
+                src={`${import.meta.env.BASE_URL}assets/fgainsan-logo.jpg`}
+                alt="fgainsan"
+                className="h-3.5 w-auto object-contain"
+              />
+            </span>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500 group-hover:text-amber-400 transition-colors">
+              Support
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-300 group-hover:text-white truncate">
+            <Mail className="w-3 h-3 text-amber-400 shrink-0" />
+            <span className="truncate">fgainsan@gmail.com</span>
+          </div>
+        </a>
+      </div>
 
       {/* User Account Footer */}
       <div className="px-4 py-3.5 border-t border-white/[0.08] flex items-center justify-between gap-2 shrink-0">

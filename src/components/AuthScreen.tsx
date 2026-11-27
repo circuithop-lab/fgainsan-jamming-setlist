@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, FileMusic, Users, ArrowRight } from 'lucide-react';
+import { RefreshCw, FileMusic, Users, ArrowRight, Mail } from 'lucide-react';
 import { signInWithGoogle } from '../services/firebase';
 
 export const AuthScreen: React.FC = () => {
@@ -125,9 +125,28 @@ export const AuthScreen: React.FC = () => {
         </div>
       </main>
 
-      <footer className="px-4 sm:px-8 py-3.5 sm:py-4 border-t border-white/[0.06] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-2">
-        <span>StageDeck Rehearsal Workspace</span>
-        <span>Real-time Cloud Sync</span>
+      <footer className="px-4 sm:px-8 py-3.5 sm:py-4 border-t border-white/[0.06] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span>StageDeck Rehearsal Workspace</span>
+          <span className="hidden sm:inline text-slate-700" aria-hidden="true">·</span>
+          <span className="hidden sm:inline">Real-time Cloud Sync</span>
+        </div>
+        <a
+          href="mailto:fgainsan@gmail.com?subject=StageDeck%20Support"
+          className="inline-flex items-center gap-2.5 text-slate-400 hover:text-amber-300 transition-colors"
+        >
+          <span className="inline-flex items-center bg-white rounded-md px-1.5 py-0.5 shadow-sm">
+            <img
+              src={`${import.meta.env.BASE_URL}assets/fgainsan-logo.jpg`}
+              alt="fgainsan"
+              className="h-4 w-auto object-contain"
+            />
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Support: fgainsan@gmail.com</span>
+          </span>
+        </a>
       </footer>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, RotateCcw, Mail } from 'lucide-react';
 
 interface State {
   hasError: boolean;
@@ -51,6 +51,22 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
               <RotateCcw className="w-4 h-4" />
               Reload Workspace
             </button>
+            <div className="pt-4 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+              <span className="inline-flex items-center bg-white rounded px-1.5 py-0.5">
+                <img
+                  src={`${import.meta.env.BASE_URL}assets/fgainsan-logo.jpg`}
+                  alt="fgainsan"
+                  className="h-4 w-auto object-contain"
+                />
+              </span>
+              <a
+                href="mailto:fgainsan@gmail.com?subject=StageDeck%20Support"
+                className="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-300 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-amber-400" />
+                <span>Contact support: fgainsan@gmail.com</span>
+              </a>
+            </div>
           </div>
         </div>
       );
